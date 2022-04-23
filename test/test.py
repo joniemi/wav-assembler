@@ -3,6 +3,7 @@ import unittest
 import wav_assembler
 import wave
 import yaml
+from numpy import float64
 
 HERE = Path(__file__).parent.resolve()
 
@@ -47,16 +48,16 @@ class TestParseYaml(unittest.TestCase):
 
 class TestReadWav(unittest.TestCase):
     def setUp(self):
-        file_specs = [
+        self.file_specs = [
             # filename, sample_rate, num_channels, num_samples
             (HERE / "mono_long.wav", 48_000, 1, 96000),
             (HERE / "64ch_short.wav", 48_000, 64, 1),
         ]
 
-        for path, sample_rate, num_channels, num_samples in file_specs:
+        for path, sample_rate, num_channels, num_samples in self.file_specs:
             write_wav(path, sample_rate, num_channels, num_samples)
 
-        self.wav_paths = [name for name, _, _ in file_specs]
+        self.wav_paths = [path for path, _, _, _ in self.file_specs]
         self.sample_rate, self.data = wav_assembler.read_wav_files(self.wav_paths)
 
     def test_different_sample_rates_raise_an_error(self):
@@ -70,18 +71,19 @@ class TestReadWav(unittest.TestCase):
     def test_num_keys_equals_num_files(self):
         self.assertEqual(2, len(self.data))
 
-    def test_data_matches_filename(self):
-        # Todo: dict keys should maybe be  strings instead?
-        self.assertEqual(2, self.data[""])
-
     def test_num_samples_matches_file(self):
-        pass
+        for path, sample_rate, num_ch, num_samples in self.file_specs:
+            actual_num_samples, actual_num_channels = self.data[path].shape
+            self.assertEqual(num_samples, actual_num_samples)
 
     def test_num_channels_matches_file(self):
-        pass
+        for path, sample_rate, num_ch, num_samples in self.file_specs:
+            actual_num_samples, actual_num_channels = self.data[path].shape
+            self.assertEqual(num_ch, actual_num_channels)
 
     def test_datatype_always_float64(self):
-        pass
+        for key in self.data:
+            self.assertEqual(float64, self.data[key].dtype)
 
 
 def write_wav(wav_path, sample_rate, num_channels, num_samples):

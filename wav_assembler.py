@@ -83,7 +83,7 @@ def read_wav_files(filenames):
     data = [d.reshape((d.size, 1)) if d.ndim == 1 else d for d in data]
 
     # Convert to 64-bit float.
-    data_as_float64 = [d.astype(numpy.float64)for d in data]
+    data_as_float64 = [d.astype(numpy.float64) for d in data]
     max_values = [numpy.iinfo(d.dtype).max for d in data]
     data_as_float64 = [
         d / max_value for d, max_value in zip(data_as_float64, max_values)
